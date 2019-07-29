@@ -10,13 +10,14 @@ import os #most of the stuff dealing with path and directory
 from pydub import AudioSegment #main library used to analyze file
 import shutil
 
-WAV_DIRECTORY         = r'C:\Users\athomas\Desktop\MusicFiles'
-DESTINATION_DIRECTORY = r'C:\Users\athomas\Desktop\SilenceLevels'
-FINAL_DIRECTORY       = r'C:\Users\athomas\Desktop\EditedMusicFiles'
+
+WAV_DIRECTORY         = r'C:\Users\athomas\Desktop\trimSilence\MusicFiles'
+DESTINATION_DIRECTORY = r'C:\Users\athomas\Desktop\trimSilence\EditedMusicFiles'
 ADDED_SILENCE_MS      = 300#int(data[varNames.index('added_silence_ms')].text)
 SILENCE_BTWN_MS       = 750#int(data[varNames.index('silence_btwn_ms')].text)
 NOISE_INSTANCE_DBFS   = -30#int(data[varNames.index('noise_instance_dBFS')].text)
 SILENCE_INSTANCE_DBFS = -54#int(data[varNames.index('silence_instance_dBFS')].text)
+
 
 def startOfUtterance(sound_file, start_point):
     for i in range(start_point, len(sound_file)):
@@ -90,9 +91,8 @@ def findAllUtterances(sound_file, file_name):
         if(len(sound_file) > max):
             max = file
 
-    os.rename(DESTINATION_DIRECTORY + "\\" + file_name + '\\' + max, FINAL_DIRECTORY + '\\' + file_name + '.mp3')
+    os.rename(DESTINATION_DIRECTORY + "\\" + file_name + '\\' + max, DESTINATION_DIRECTORY + '\\' + file_name + '.mp3')
     shutil.rmtree(DESTINATION_DIRECTORY + '\\' + file_name)
-
 
 
 def main():
