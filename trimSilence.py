@@ -13,7 +13,6 @@ import sys #sys exit
 import argparse #how we parse the arguments
 import os #most of the stuff dealing with path and directory
 from pydub import AudioSegment #main library used to analyze file
-import shutil
 
 
 WAV_DIRECTORY         = r'C:\Users\athomas\Desktop\trimSilence\MusicFiles'
@@ -25,6 +24,11 @@ NOISE_INSTANCE_DBFS   = -30
 SILENCE_INSTANCE_DBFS = -54
 
 SIL_BUFFER = AudioSegment.silent(duration = ADDED_SILENCE_MS)
+
+
+def match_target_amplitude(sound, target_dBFS):
+    change_in_dBFS = target_dBFS - sound.dBFS
+    return sound.apply_gain(change_in_dBFS)
 
 
 def startOfUtterance(sound_file, start_point):
@@ -43,7 +47,7 @@ def endOfUtterance(sound_file, ut_start):
             while(j < SILENCE_BTWN_MS):
                 if(j+i > len(sound_file)):
                     return len(sound_file) - 1
-                elif(sound_file[j + i].dBFS > NOISE_INSTANCE_DBFS):  #noise is detected
+                elif(sound_file[j + i].dBFS >= NOISE_INSTANCE_DBFS):  #noise is detected
                     noise = True        #set T/F value to true
                     i += j              #i -> j+i saves calculation
                     j = SILENCE_BTWN_MS #will not enter while loop again now
@@ -87,7 +91,8 @@ def main():
     for filename in os.listdir(WAV_DIRECTORY):  # goes through every raw mp3 file
         file_name = filename[:-4]  # get the filename without the '.mp3'
         sound_file = AudioSegment.from_mp3(WAV_DIRECTORY + "\\" + filename)
-        findAllUtterances(sound_file, file_name)
+        normalized_sound = match_target_amplitude(sound_file, -20.0)
+        findAllUtterances(normalized_sound, file_name)
 
 
 if __name__ == '__main__':
