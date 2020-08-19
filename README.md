@@ -8,7 +8,7 @@ Optimization of music editing.
 
 ## Demo
 
-![DEMO](https://github.com/athom031/trimSilences/blob/master/Demo.png)
+![DEMO](https://github.com/athom031/trimSilence/blob/master/Demo.png)
 
 ## Prerequisites
 
@@ -22,7 +22,7 @@ Optimization of music editing.
 
 ## Getting Started
 
-1. Update [config.JSON](https://github.com/athom031/trimSilences/blob/master/config.JSON) with desired directories. Default Audio levels can be changed as well. 
+1. Update [config.JSON](https://github.com/athom031/trimSilence/blob/master/config.JSON) with desired directories. Default Audio levels can be changed as well. 
 2. Run trimSilence script.
 ```
     python trimSilence.py
