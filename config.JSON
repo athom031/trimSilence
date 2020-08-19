@@ -1,5 +1,5 @@
 {
-	"wav_directory"         : "/Users/alex/Documents/GitHub/trimSilence/MusicFiles",
+	"music_directory"       : "/Users/alex/Documents/GitHub/trimSilence/MusicFiles",
 	"temp_directory"        : "/Users/alex/Documents/GitHub/trimSilence/UttFiles",
 	"destination_directory" : "/Users/alex/Documents/GitHub/trimSilence/EditedMusicFiles",
 	"added_silence_ms"      : 300,

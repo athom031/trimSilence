@@ -1,15 +1,14 @@
-# Audio Silence Trimmer and Level Normalizer Delete from Middle
+# Silence Trimmer and Audio Normalizer
 
-A way to make editing music simple.
+Optimization of music editing.
 
 1. Take directory of music files, and normalize audio.
 2. Search the audio file for the actual music and cut out silence and trivial bits.
-3. export edited audio to new directory.
+3. Export edited audio to new directory.
 
 ## Demo
 
-Fixing the Humma Song to take out the entire unnecessary pop rap verse.
-![DEMO](https://github.com/athom031/trimSilence/blob/master/Demo.png)
+![DEMO](https://github.com/athom031/trimSilences/blob/master/Demo.png)
 
 ## Prerequisites
 
@@ -23,24 +22,19 @@ Fixing the Humma Song to take out the entire unnecessary pop rap verse.
 
 ## Getting Started
 
-1. Update global variables with desired directories.
-2. Run splitscript and enter the song name along with the time stamps.
+1. Update [config.JSON](https://github.com/athom031/trimSilences/blob/master/config.JSON) with desired directories. Default Audio levels can be changed as well. 
+2. Run trimSilence script.
 ```
-    python entryWidget.py
+    python trimSilence.py
 ```
-3. Click the button to run app or exit the window to close the program
 
 ## Warnings 
-To avoid following runtime warning:
-```
-RuntimeWarning: Couldn't find ffmpeg or avconv - defaulting to ffmpeg, but may not work
-warn("Couldn't find ffmpeg or avconv - defaulting to ffmpeg, but may not work", RuntimeWarning)
-```
-run script with -W ignore
-```
-python -W ignore entryWidget.py
-```
+For demo purposes the temporary, music, and edited directories are kept separate but in real life application this might use up a lot of space quick. 
+
+The script will automatically clear up the temporary directory on its own.
+
+Another additional way to save space is to make the destination directory the same as the music directory.
 
 ## Inspiration
 
-Not being able to do it easily for so many of my favorite songs.
+A real world application of Knowles Intelligent Audio Test Team utterance split methods.

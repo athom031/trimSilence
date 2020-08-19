@@ -16,7 +16,7 @@ from pydub import AudioSegment # Open Source Python Library to process Audio as 
 with open('config.json') as config_file:
     data = json.load(config_file)
 
-WAV_DIR               = data['wav_directory']
+MUSIC_DIR             = data['music_directory']
 TEMP_DIR              = data['temp_directory']
 DEST_DIR              = data['destination_directory']
 ADDED_SILENCE_MS      = data['added_silence_ms']
@@ -129,12 +129,12 @@ def findAllUtterances(sound_file, file_name):
 
 
 def main():
-    for filename in os.listdir(WAV_DIR):  # goes through every raw mp3 file
+    for filename in os.listdir(MUSIC_DIR):  # goes through every raw mp3 file
         if(filename[-4:] != '.mp3'):
             continue #ignore .DS_store on mac or likewise for windows
         
         file_name = filename[:-4]  # get the filename without the '.mp3'
-        sound_file = AudioSegment.from_mp3(WAV_DIR + dirChar + filename)
+        sound_file = AudioSegment.from_mp3(MUSIC_DIR + dirChar + filename)
         normalized_sound = match_target_amplitude(sound_file, NORMALIZE_DBFS)
         i = 0
         findAllUtterances(normalized_sound, file_name)
