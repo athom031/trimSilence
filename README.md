@@ -1,26 +1,10 @@
 # Audio Silence Trimmer and Level Normalizer Delete from Middle
 
-Music is such a beautiful thing.
+A way to make editing music simple.
 
-I grew up with Indian music and when I was growing up songs were 10 minutes long.
-
-Literally.
-
-10 minutes with 2 minutes being a part in the movie where the storyline is progressing and it is just instrumentals.
-
-Now that isn't what you want for your road trip.
-
-Or when you grow up a little bit and now every Bollywood song has an annoying rap verse for no reason.
-
-Let's get rid of that.
-
-
-##### Python Desktop Widget to Take out sections of Music
-
-1. Search Repository for User Suggested song.
-2. Convert time index of start and stop to ms.
-3. Export the desired music segment to new directory.
-
+1. Take directory of music files, and normalize audio.
+2. Search the audio file for the actual music and cut out silence and trivial bits.
+3. export edited audio to new directory.
 
 ## Demo
 

@@ -51,14 +51,14 @@ def startOfUtterance(sound_file, start_point):
     for i in range(start_point, len(sound_file)):
         if(sound_file[i].dBFS > NOISE_INSTANCE_DBFS):
         #found starting instance of noise
-            return(i - ADDED_SILENCE_MS)
+            return i
             #return silence amount index before noise
     return -1
     #if no noise from start point to end of file then signify no utterance
 
 
 def endOfUtterance(sound_file, ut_start):
-    i = ut_start + ADDED_SILENCE_MS
+    i = ut_start
     #we get the start of utterance from previous function and adjust 
     while(i < len(sound_file)):
     
@@ -86,7 +86,7 @@ def endOfUtterance(sound_file, ut_start):
                     j += 1
                 
             if (noise == False):
-                return(i + ADDED_SILENCE_MS)
+                return i 
                 #buffer of added_silence value following end of utterance
         i += 1
     return len(sound_file) - 1 
@@ -109,6 +109,10 @@ def findAllUtterances(sound_file, file_name):
         if (ut_start == -1):  # if start of utterance finds no start till end of file
             break
         ut_end   = endOfUtterance(sound_file, ut_start)
+        
+        #TERNARY: (if_test_is_false, if_test_is_true)[test]
+        ut_start =  (0, ut_start - 300)[ut_start > 300]
+        ut_end   =  (len(sound_file - 1), ut_end + 300)[ut_end + 300 < len(sound_file)]
         new_audio = sound_file[ut_start:ut_end]
 
         if (len(new_audio) > len(max_audio)):
@@ -132,10 +136,11 @@ def main():
         file_name = filename[:-4]  # get the filename without the '.mp3'
         sound_file = AudioSegment.from_mp3(WAV_DIR + dirChar + filename)
         normalized_sound = match_target_amplitude(sound_file, NORMALIZE_DBFS)
+        i = 0
         findAllUtterances(normalized_sound, file_name)
     
-    shutil.rmtree(TEMP_DIR)
-    os.mkdir(TEMP_DIR)
+    shutil.rmtree(TEMP_DIR) # will clear ut file for space (treated as temp directory)
+    os.mkdir(TEMP_DIR)      # delete these lines if not wanted
 
 
 if __name__ == '__main__':
