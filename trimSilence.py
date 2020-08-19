@@ -1,62 +1,98 @@
 '''
 Author: Alex Thomas
-Date:7/29/2019 - xml configuration
-Script that looks at a folder of mp3 files
-Each file
- Split the file into utterances
- Choose the utterance that is the longest
- Output that file into destination directory
+
+Cleanup Audio, trim silence and normalize audio
 '''
 
+import json
+import sys 
+import argparse 
+import shutil                  # for space delete utterance file after completion 
+import os                      # make directory and paths for new utterence folders
+from pydub import AudioSegment # Open Source Python Library to process Audio as array
 
-import sys #sys exit
-import argparse #how we parse the arguments
-import os #most of the stuff dealing with path and directory
-from pydub import AudioSegment #main library used to analyze file
+
+#---------------------------- Open config.json and assign global variables ----------------------------#
+with open('config.json') as config_file:
+    data = json.load(config_file)
+
+WAV_DIR               = data['wav_directory']
+TEMP_DIR              = data['temp_directory']
+DEST_DIR              = data['destination_directory']
+ADDED_SILENCE_MS      = data['added_silence_ms']
+SILENCE_BTWN_MS       = data['silence_btwn_ms']
+NOISE_INSTANCE_DBFS   = data['noise_instance_dBFS']
+SILENCE_INSTANCE_DBFS = data['silence_instance_dBFS']
+NORMALIZE_DBFS        = data['normalize']
+SYSTEM                = data['system_type']
 
 
-WAV_DIRECTORY         = r'C:\Users\athomas\Desktop\trimSilence\MusicFiles'
-DESTINATION_DIRECTORY = r'C:\Users\athomas\Desktop\trimSilence\EditedMusicFiles'
-UTT_DIRECTORY         = r'C:\Users\athomas\Desktop\trimSilence\UttFiles'
-ADDED_SILENCE_MS      = 300
-SILENCE_BTWN_MS       = 750
-NOISE_INSTANCE_DBFS   = -30
-SILENCE_INSTANCE_DBFS = -54
+if SYSTEM == "mac":
+    dirChar = "/"
+else:
+    dirChar = "\\"
 
 SIL_BUFFER = AudioSegment.silent(duration = ADDED_SILENCE_MS)
 
+#------------------------------------------------------------------------------------------------------#
+
+
+#--------------------------------------------- Normalize ----------------------------------------------#
 
 def match_target_amplitude(sound, target_dBFS):
     change_in_dBFS = target_dBFS - sound.dBFS
     return sound.apply_gain(change_in_dBFS)
 
+#------------------------------------------------------------------------------------------------------#
 
+
+#-------------------------------------- Utterence Slice Indices ---------------------------------------#
 def startOfUtterance(sound_file, start_point):
-    for i in range(start_point, len(sound_file)): #iterate from start point to end of file
-        if(sound_file[i].dBFS > NOISE_INSTANCE_DBFS): #upon first find of talking noise
-            return i    #return utterance start
-    return -1       #from start_point to end of file no noise, then no utterance
+    for i in range(start_point, len(sound_file)):
+        if(sound_file[i].dBFS > NOISE_INSTANCE_DBFS):
+        #found starting instance of noise
+            return(i - ADDED_SILENCE_MS)
+            #return silence amount index before noise
+    return -1
+    #if no noise from start point to end of file then signify no utterance
 
 
 def endOfUtterance(sound_file, ut_start):
-    i = ut_start #get start from startOfUtterance function
-    while(i < len(sound_file)): #should stop at end of sound_file
-        if(sound_file[i].dBFS < SILENCE_INSTANCE_DBFS):     #possible end of file
-            noise = False #T/F value for noise after possible end of utterance
-            j = 1
+    i = ut_start + ADDED_SILENCE_MS
+    #we get the start of utterance from previous function and adjust 
+    while(i < len(sound_file)):
+    
+        enter_loop = False
+        if(sound_file[i].dBFS < SILENCE_INSTANCE_DBFS):
+            #possible end of file
+            enter_loop = True
+        if (enter_loop):
+            #test if index is the end of utterance
+            noise = False
+            j = 0
             while(j < SILENCE_BTWN_MS):
-                if(j+i > len(sound_file)):
-                    return len(sound_file) - 1
-                elif(sound_file[j + i].dBFS >= NOISE_INSTANCE_DBFS):  #noise is detected
-                    noise = True        #set T/F value to true
-                    i += j              #i -> j+i saves calculation
-                    j = SILENCE_BTWN_MS #will not enter while loop again now
+                if(sound_file[j + i].dBFS > NOISE_INSTANCE_DBFS):
+                    #noise is detected
+                    noise = True
+                    
+                    i += j
+                    #i should then go to j+i value 
+                    #OPTIMIZE CALCULATIONS
+                    
+                    j = SILENCE_BTWN_MS
+                    #forces exit of loop
+
                 else:
-                    j += 1  #if no noise increment
-            if (noise == False): # still false means no instance of noise SILENCE_BTWN_MS amaount
-                return(i)
+                    j += 1
+                
+            if (noise == False):
+                return(i + ADDED_SILENCE_MS)
+                #buffer of added_silence value following end of utterance
         i += 1
-    return len(sound_file) - 1
+    return len(sound_file) - 1 
+    #if sound occurs untill end, soundfiles end is the end of the utterence
+
+#------------------------------------------------------------------------------------------------------#
 
 
 def findAllUtterances(sound_file, file_name):
@@ -64,7 +100,7 @@ def findAllUtterances(sound_file, file_name):
     i = 0
     max_audio = AudioSegment.silent()
     try:
-        os.mkdir(UTT_DIRECTORY + '\\' + file_name)  # make a folder to put all splits for each mp3 file
+        os.mkdir(TEMP_DIR + dirChar + file_name)  # make a folder to put all splits for each mp3 file
     except:
         return
 
@@ -73,26 +109,33 @@ def findAllUtterances(sound_file, file_name):
         if (ut_start == -1):  # if start of utterance finds no start till end of file
             break
         ut_end   = endOfUtterance(sound_file, ut_start)
-        new_audio = SIL_BUFFER + sound_file[ut_start:ut_end] + SIL_BUFFER #creates new audio file
+        new_audio = sound_file[ut_start:ut_end]
 
         if (len(new_audio) > len(max_audio)):
             max_audio = new_audio
 
         new_audio.export(file_name + '_%s.mp3' % ut_count, format="mp3") #names audio file with utt_count
-        os.rename(os.path.abspath(file_name + '_%s.mp3' % ut_count), UTT_DIRECTORY + '\\' + file_name + '\\' + file_name + '_Utterance_%s.mp3' % ut_count)
+        os.rename(os.path.abspath(file_name + '_%s.mp3' % ut_count), 
+                TEMP_DIR + dirChar + file_name + dirChar + file_name + '_Utterance_%s.mp3' % ut_count)
         i = ut_end #move i along properly
         ut_count += 1 #increment ut_count
 
-    max_audio.export(file_name + '_sil.mp3', format = "mp3")
-    os.rename(os.path.abspath(file_name + '_sil.mp3'), DESTINATION_DIRECTORY + '\\' + file_name + '_sil.mp3')
+    max_audio.export(file_name + '_final.mp3', format = "mp3")
+    os.rename(os.path.abspath(file_name + '_final.mp3'), DEST_DIR + dirChar + file_name + '.mp3')
 
 
 def main():
-    for filename in os.listdir(WAV_DIRECTORY):  # goes through every raw mp3 file
+    for filename in os.listdir(WAV_DIR):  # goes through every raw mp3 file
+        if(filename[-4:] != '.mp3'):
+            continue #ignore .DS_store on mac or likewise for windows
+        
         file_name = filename[:-4]  # get the filename without the '.mp3'
-        sound_file = AudioSegment.from_mp3(WAV_DIRECTORY + "\\" + filename)
-        normalized_sound = match_target_amplitude(sound_file, -20.0)
+        sound_file = AudioSegment.from_mp3(WAV_DIR + dirChar + filename)
+        normalized_sound = match_target_amplitude(sound_file, NORMALIZE_DBFS)
         findAllUtterances(normalized_sound, file_name)
+    
+    shutil.rmtree(TEMP_DIR)
+    os.mkdir(TEMP_DIR)
 
 
 if __name__ == '__main__':

@@ -1,0 +1,11 @@
+{
+	"wav_directory"         : "/Users/alex/Documents/GitHub/trimSilence/MusicFiles",
+	"temp_directory"        : "/Users/alex/Documents/GitHub/trimSilence/UttFiles",
+	"destination_directory" : "/Users/alex/Documents/GitHub/trimSilence/EditedMusicFiles",
+	"added_silence_ms"      : 300,
+	"silence_btwn_ms"       : 750,
+	"noise_instance_dBFS"   : -30,
+	"silence_instance_dBFS" : -54,
+	"normalize"             : -20,
+	"system_type"           : "mac"
+}
